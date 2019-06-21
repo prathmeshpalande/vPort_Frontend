@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.virtual.portable.task.CoordinatePoster;
 
@@ -28,6 +29,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     URL ImageUrl;// = new URL("http://192.168.1.4:8080/grab_screen");
     InputStream is;
     Bitmap bmImg;
+
+//    CoordinatePoster coordinatePoster = new CoordinatePoster();
 
     private final Handler handler = new Handler();
 
@@ -75,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
         doTheAutoRefresh();
 //        new AsyncImageLoad().execute("https://homepages.cae.wisc.edu/~ece533/images/airplane.png");
+//        new AsyncImageLoad().execute("http://192.168.1.4:8080/grab_screen");
 
 
         Log.d("Load-up Done", "Finished Loading the app");
@@ -97,7 +102,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 // Write code for your refresh logic
-                new AsyncImageLoad().execute("http://192.168.1.4:8080/grab_screen");
+                try {
+                    Log.d("AutoRefresh", "Performing Screen Refresh");
+//                    new AsyncImageLoad().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,"http://192.168.1.4:8080/grab_screen").get();
+                    new AsyncImageLoad().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,"http://192.168.1.4:8080/grab_screen").get();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 doTheAutoRefresh();
             }
         }, 1);
@@ -206,12 +219,18 @@ public class MainActivity extends AppCompatActivity {
             Measuredheight = d.getHeight();
         }
 
-        CoordinatePoster coordinatePoster = new CoordinatePoster();
+//        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(Measuredwidth, Measuredheight);
+//        imageView.setLayoutParams(layoutParams);
 
-        coordinatePoster.execute("http://192.168.1.4:8080/register_resolution", Measuredwidth.toString(), Measuredheight.toString());
+//        CoordinatePoster coordinatePoster = new CoordinatePoster();
+
+//        coordinatePoster.execute("http://192.168.43.73:8080/register_resolution", Measuredwidth.toString(), Measuredheight.toString());
+        new CoordinatePoster().execute("http://192.168.1.4:8080/register_resolution", Measuredwidth.toString(), Measuredheight.toString());
+
 
         Log.d("Success", "Resolution successfully posted!");
     }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
 
@@ -222,8 +241,8 @@ public class MainActivity extends AppCompatActivity {
 
         //TODO: Pass (x,y) to the API
         Log.d("Posting", "Posting Coordinates");
-        CoordinatePoster coordinatePoster = new CoordinatePoster();
-        coordinatePoster.execute("http://192.168.1.4:8080/post_coordinates", x.toString(), y.toString());
+//        CoordinatePoster coordinatePoster = new CoordinatePoster();
+        new CoordinatePoster().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,"http://192.168.1.4:8080/post_coordinates", x.toString(), y.toString());
 
 
         return super.dispatchTouchEvent(event);
