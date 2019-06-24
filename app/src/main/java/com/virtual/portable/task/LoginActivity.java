@@ -1,6 +1,8 @@
 package com.virtual.portable.task;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -8,9 +10,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.virtual.portable.MainActivity;
 import com.virtual.portable.R;
+
+import java.util.concurrent.ExecutionException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -33,17 +39,26 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
 
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
+
         _loginButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                login();
+                try {
+                    login();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
     }
 
-    public void login() {
+    public void login() throws ExecutionException, InterruptedException {
         Log.d(TAG, "Login");
 
         if (!validate()) {
@@ -64,13 +79,32 @@ public class LoginActivity extends AppCompatActivity {
 
         // TODO: Implement your own authentication logic here.
 
+      AsyncTask<String, String, String> response =  new LoginPoster().execute("http://192.168.1.4:8080/login", email, password);
+
         new android.os.Handler().postDelayed(
                 new Runnable() {
                     public void run() {
                         // On complete call either onLoginSuccess or onLoginFailed
-                        onLoginSuccess();
-                        // onLoginFailed();
                         progressDialog.dismiss();
+                        try {
+                            if(response.get().equals("Success")) {
+                                onLoginSuccess();
+                                final ProgressDialog dialog = new ProgressDialog(LoginActivity.this,
+                                        R.style.AppTheme_Dark_Dialog);
+                                dialog.setIndeterminate(true);
+                                dialog.setMessage("Authenticated");
+                                dialog.show();
+                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                startActivity(intent);
+                            } else {
+                                onLoginFailed();
+                                Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_LONG).show();
+                            }
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }, 3000);
     }

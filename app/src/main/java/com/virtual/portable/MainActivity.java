@@ -1,29 +1,24 @@
 package com.virtual.portable;
 
-import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Handler;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.webkit.WebView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.virtual.portable.task.CoordinatePoster;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -105,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     Log.d("AutoRefresh", "Performing Screen Refresh");
 //                    new AsyncImageLoad().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,"http://192.168.1.4:8080/grab_screen").get();
-                    new AsyncImageLoad().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,"http://192.168.1.4:8080/grab_screen").get();
+                    new AsyncImageLoad().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://192.168.1.4:8080/grab_screen").get();
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
@@ -188,10 +183,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
-            if(imageView!=null) {
+            if (imageView != null) {
 //                p.hide();
                 imageView.setImageBitmap(bitmap);
-            }else {
+            } else {
 //                p.show();
             }
         }
@@ -202,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
 //            imageView.setImageBitmap(bitmap);
 //        }
     }
+
     private void postResolution() {
 
         Integer Measuredwidth = 0;
@@ -209,11 +205,11 @@ public class MainActivity extends AppCompatActivity {
         Point size = new Point();
         WindowManager w = getWindowManager();
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             w.getDefaultDisplay().getSize(size);
             Measuredwidth = size.x;
             Measuredheight = size.y;
-        }else{
+        } else {
             Display d = w.getDefaultDisplay();
             Measuredwidth = d.getWidth();
             Measuredheight = d.getHeight();
@@ -234,15 +230,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
 
-        Integer x = (int)event.getX();
-        Integer y = (int)event.getY();
+        Integer x = (int) event.getX();
+        Integer y = (int) event.getY();
 
         Log.d("Touched at", "Touched at: " + x + ", " + y);
 
         //TODO: Pass (x,y) to the API
         Log.d("Posting", "Posting Coordinates");
 //        CoordinatePoster coordinatePoster = new CoordinatePoster();
-        new CoordinatePoster().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,"http://192.168.1.4:8080/post_coordinates", x.toString(), y.toString());
+        new CoordinatePoster().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://192.168.1.4:8080/post_coordinates", x.toString(), y.toString());
 
 
         return super.dispatchTouchEvent(event);
